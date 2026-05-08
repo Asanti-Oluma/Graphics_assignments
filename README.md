@@ -73,7 +73,7 @@ The window will open. Press Generate maze to create a new maze, then Solve maze 
 
 ## Demo
 
-[Click here to watch the full demo (Loom recording)]([ADD YOUR LOOM LINK HERE])
+[Click here to watch the full demo (Loom recording)](https://www.loom.com/share/8c6f30a597e64ee4af82f9b849b47d42)
 
 ## Author
 

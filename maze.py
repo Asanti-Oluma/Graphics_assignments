@@ -252,15 +252,20 @@ class MazeApp:
                                      (ox + c * cell, oy + r * cell),
                                      (ox + c * cell, oy + (r + 1) * cell), 2)
 
-        pygame.draw.rect(surf, WALL_COL, cr, 1)
+        # Border rectangle removed to show exit opening
+        # pygame.draw.rect(surf, WALL_COL, cr, 1)  # COMMENTED OUT
 
         # Draw start/end markers
         if self.startR is not None:
             sz = max(5, cell * 0.35)
-            for mr, mc in ((self.startR, self.startC), (self.endR, self.endC)):
-                pygame.draw.circle(surf, MARKER_YLW,
-                                   (ox + mc * cell + cell // 2,
-                                    oy + mr * cell + cell // 2), int(sz))
+            # Draw start marker (left side)
+            pygame.draw.circle(surf, MARKER_YLW,
+                               (ox + self.startC * cell + cell // 2,
+                                oy + self.startR * cell + cell // 2), int(sz))
+            # Draw end marker (right side)
+            pygame.draw.circle(surf, MARKER_YLW,
+                               (ox + self.endC * cell + cell // 2,
+                                oy + self.endR * cell + cell // 2), int(sz))
 
     def _draw_ui(self):
         """Draw all UI elements."""
@@ -327,10 +332,11 @@ class MazeApp:
                 
         elif self.phase == 'solved' and self.solver:
             path, _, solution = self.solver.get_progress()
+            # Show dead ends (blue) first, then solution (green) on top
             for r in range(self.R):
                 for c in range(self.C):
-                    if path[r][c] == 2:
-                        hi.append((r, c, SOL_GREEN))
+                    if path[r][c] == 3:
+                        hi.append((r, c, DEAD_BLUE))
             if solution:
                 for r, c in solution:
                     hi.append((r, c, SOL_GREEN))
@@ -352,6 +358,12 @@ class MazeApp:
         self.startC = 0
         self.endR = random.randrange(self.R)
         self.endC = self.C - 1
+        
+        # Open the entrance and exit walls
+        # Left entrance: remove west wall of start cell
+        self.eastWall[self.startR][0] = 0
+        # Right exit: remove east wall of exit cell (not the outer border)
+        self.eastWall[self.endR][self.endC] = 0
         
         self.phase = 'gen'
         self.status = 'Generating maze... (mouse eating walls)'
@@ -384,8 +396,9 @@ class MazeApp:
     def run(self):
         """Main application loop."""
         self._layout()
-        self.northWall = [[0] * (self.C + 1) for _ in range(self.R + 1)]
-        self.eastWall = [[0] * (self.C + 1) for _ in range(self.R + 1)]
+        # Create temporary walls for initial display
+        self.northWall = [[1] * (self.C + 1) for _ in range(self.R + 1)]
+        self.eastWall = [[1] * (self.C + 1) for _ in range(self.R + 1)]
 
         while True:
             for event in pygame.event.get():
